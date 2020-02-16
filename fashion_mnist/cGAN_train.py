@@ -111,12 +111,35 @@ def define_generator(latent_dim, n_classes=10):
 
     return model
 
+ # define the combined generator and discriminator model, for updating the generator
+def define_gan(g_model, d_model):
+	
+    # make weights in the discriminator not trainable
+    d_model.trainable = False
+
+    # get noise and label inputs from generator model
+    gen_noise, gen_label = g_model.input
+
+    # get image output from the generator model
+    gen_output = g_model.output
+	
+    # connect image output and label input from generator as inputs to discriminator
+    gan_output = d_model([gen_output, gen_label])
+	
+    # define gan model as taking noise and label and outputting a classification
+    model = Model([gen_noise, gen_label], gan_output)
+	
+    # compile model
+    opt = Adam(lr=0.0002, beta_1=0.5)
+    model.compile(loss='binary_crossentropy', optimizer=opt)
+	
+    return model
 
 # load fashion mnist images
 def load_real_samples():
 
     # load dataset
-    (trainX, trainy), (_, _) = fashion_nmist.load_data()
+    (trainX, trainy), (_, _) = fashion_mnist.load_data()
 
     # expand to 3d, e.g. add channels
     X = expand_dims(trainX, axis=-1)
@@ -152,7 +175,7 @@ def generate_real_samples(dataset, n_samples):
 def load_real_samples():
 
     # load dataset
-    (trainX, trainy), (_, _) = load_data()
+    (trainX, trainy), (_, _) = fashion_mnist.load_data()
 
     # expand to 3d, e.g. add channels
     X = expand_dims(trainX, axis=-1)
@@ -183,6 +206,33 @@ def generate_real_samples(dataset, n_samples):
 
     return [X, labels], y
 
+# generate points in latent space as input for the generator
+def generate_latent_points(latent_dim, n_samples, n_classes=10):
+	
+    # generate points in the latent space
+    x_input = randn(latent_dim * n_samples)
+	
+    # reshape into a batch of inputs for the network
+    z_input = x_input.reshape(n_samples, latent_dim)
+	
+    # generate labels
+    labels = randint(0, n_classes, n_samples)
+	
+    return [z_input, labels]
+
+# use the generator to generate n fake examples, with class labels
+def generate_fake_samples(generator, latent_dim, n_samples):
+	
+    # generate points in latent space
+    z_input, labels_input = generate_latent_points(latent_dim, n_samples)
+	
+    # predict outputs
+    images = generator.predict([z_input, labels_input])
+	
+    # create class labels
+    y = zeros((n_samples, 1))
+	
+    return [images, labels_input], y
 
 # train the generator and discriminator
 def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=100, n_batch=128):
