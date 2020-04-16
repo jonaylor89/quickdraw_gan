@@ -6,7 +6,7 @@
 dist/
 
 # Dataset
-fashion_mnist/quickdraw/
+quickdraw_gan/quickdraw/
 
 # Editors
 .vscode/
