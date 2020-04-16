@@ -1,6 +1,12 @@
 
+# Keys
 *.pem
+
+# Distrubution files
 dist/
+
+# Dataset
+fashion_mnist/quickdraw/
 
 # Editors
 .vscode/

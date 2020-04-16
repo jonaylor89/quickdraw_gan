@@ -19,7 +19,6 @@ def pull_data():
     quickdraw_directory = this_directory + "/quickdraw"
     bitmap_directory = quickdraw_directory + "/bitmap"
 
-
     make_directory(quickdraw_directory)
     make_directory(bitmap_directory)
 
@@ -28,9 +27,9 @@ def pull_data():
     total_categories = len(categories)
 
     for index, category in enumerate(categories):
-        bitmap_filename = f"/{category}/.npy"
+        bitmap_filename = f"/{category}.npy"
 
-        with open(bitmap_directory + bitmap_filename, "w+") as bitmap_file:
+        with open(bitmap_directory + bitmap_filename, "wb+") as bitmap_file:
             bitmap_response = requests.get(bitmap_url + bitmap_filename)
             bitmap_file.write(bitmap_response.content)
 
