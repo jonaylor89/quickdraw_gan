@@ -6,7 +6,7 @@ from matplotlib import pyplot
 
 
 # generate points in latent space as input for the generator
-def generate_latent_points(latent_dim, n_samples, n_classes=10):
+def generate_latent_points(latent_dim, n_samples, n_classes=3):
 
     # generate points in the latent space
     x_input = randn(latent_dim * n_samples)
@@ -44,10 +44,10 @@ def main():
     model = load_model("cgan_doodle_generator.h5")
 
     # generate images
-    latent_points, labels = generate_latent_points(100, 100)
+    latent_points, labels = generate_latent_points(100, 9)
 
     # specify labels
-    labels = asarray([x for _ in range(10) for x in range(10)])
+    labels = asarray([x for _ in range(3) for x in range(3)])
 
     # generate images
     X = model.predict([latent_points, labels])
@@ -56,7 +56,7 @@ def main():
     X = (X + 1) / 2.0
 
     # plot the result
-    save_plot(X, 10)
+    save_plot(X, 3)
 
 
 if __name__ == "__main__":

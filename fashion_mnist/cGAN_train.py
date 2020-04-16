@@ -228,7 +228,7 @@ def load_data():
 
         # for pixel_data in sampled_data:
         for pixel_data in transformed_data:
-            drawings.append(np.invert(pixel_data))
+            drawings.append(pixel_data)
             labels.append(labels_mapping[category])
 
         print(f"...{category} bitmaps complete")
@@ -239,7 +239,7 @@ def load_data():
 
 
 # train the generator and discriminator
-def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=20, n_batch=100):
+def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=5, n_batch=100):
     bat_per_epo = int(dataset[0].shape[0] / n_batch)
     half_batch = int(n_batch / 2)
 
