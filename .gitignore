@@ -1,3 +1,7 @@
 
 *.pem
 dist/
+
+# Editors
+.vscode/
+.idea/

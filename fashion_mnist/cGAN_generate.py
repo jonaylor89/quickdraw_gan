@@ -4,6 +4,7 @@ from numpy.random import randint
 from keras.models import load_model
 from matplotlib import pyplot
 
+
 # generate points in latent space as input for the generator
 def generate_latent_points(latent_dim, n_samples, n_classes=10):
 
@@ -40,7 +41,7 @@ def save_plot(examples, n):
 def main():
 
     # load model
-    model = load_model("cgan_generator.h5")
+    model = load_model("cgan_doodle_generator.h5")
 
     # generate images
     latent_points, labels = generate_latent_points(100, 100)
