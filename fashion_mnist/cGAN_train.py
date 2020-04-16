@@ -20,9 +20,9 @@ from keras.layers import Dropout
 from keras.layers import Embedding
 from keras.layers import Concatenate
 
-# define the standalone discriminator model
-def define_discriminator(in_shape=(28, 28, 1), n_classes=10):
 
+# define the standalone discriminator model
+def define_discriminator(in_shape=(28, 28, 1), n_classes=3):
     # label input
     in_label = Input(shape=(1,))
 
@@ -70,8 +70,7 @@ def define_discriminator(in_shape=(28, 28, 1), n_classes=10):
 
 
 # define the standalone generator model
-def define_generator(latent_dim, n_classes=10):
-
+def define_generator(latent_dim, n_classes=3):
     # label input
     in_label = Input(shape=(1,))
 
@@ -116,7 +115,6 @@ def define_generator(latent_dim, n_classes=10):
 
 # define the combined generator and discriminator model, for updating the generator
 def define_gan(g_model, d_model):
-
     # make weights in the discriminator not trainable
     d_model.trainable = False
 
@@ -139,63 +137,28 @@ def define_gan(g_model, d_model):
     return model
 
 
-# load fashion mnist images
+# load quickdraw images
 def load_real_samples():
-
     # load dataset
-    (trainX, trainy), (_, _) = train_test_split(x, y, test_size=0.2)
+    trainX, _, trainY, _ = load_data()
+
+    trainX = np.array(trainX)
+    trainY = np.array(trainY)
 
     # expand to 3d, e.g. add channels
-    X = expand_dims(trainX, axis=-1)
+    # X = expand_dims(trainX, axis=-1)
 
-    # convert from ints to floats
-    X = X.astype("float32")
+    # convert to float32
+    X = trainX.astype("float32")
 
     # scale from [0,255] to [-1,1]
     X = (X - 127.5) / 127.5
 
-    return [X, trainy]
+    return [X, trainY]
 
 
 # select real samples
 def generate_real_samples(dataset, n_samples):
-
-    # split into images and labels
-    images, labels = dataset
-
-    # choose random instances
-    ix = randint(0, images.shape[0], n_samples)
-
-    # select images and labels
-    X, labels = images[ix], labels[ix]
-
-    # generate class labels
-    y = ones((n_samples, 1))
-
-    return [X, labels], y
-
-
-# load fashion mnist images
-def load_real_samples():
-
-    # load dataset
-    (trainX, trainy), (_, _) = load_data()
-
-    # expand to 3d, e.g. add channels
-    X = expand_dims(trainX, axis=-1)
-
-    # convert from ints to floats
-    X = X.astype("float32")
-
-    # scale from [0,255] to [-1,1]
-    X = (X - 127.5) / 127.5
-
-    return [X, trainy]
-
-
-# select real samples
-def generate_real_samples(dataset, n_samples):
-
     # split into images and labels
     images, labels = dataset
 
@@ -212,8 +175,7 @@ def generate_real_samples(dataset, n_samples):
 
 
 # generate points in latent space as input for the generator
-def generate_latent_points(latent_dim, n_samples, n_classes=10):
-
+def generate_latent_points(latent_dim, n_samples, n_classes=3):
     # generate points in the latent space
     x_input = randn(latent_dim * n_samples)
 
@@ -228,7 +190,6 @@ def generate_latent_points(latent_dim, n_samples, n_classes=10):
 
 # use the generator to generate n fake examples, with class labels
 def generate_fake_samples(generator, latent_dim, n_samples):
-
     # generate points in latent space
     z_input, labels_input = generate_latent_points(latent_dim, n_samples)
 
@@ -242,8 +203,12 @@ def generate_fake_samples(generator, latent_dim, n_samples):
 
 
 def load_data():
+    labels_mapping = {
+        "apple": 0,
+        "banana": 1,
+        "grapes": 2
+    }
 
-    categories = ["apple", "banana", "grapes"]
     this_directory = os.path.dirname(os.path.realpath(__file__))
     quickdraw_directory = this_directory + "/quickdraw"
     bitmap_directory = quickdraw_directory + "/bitmap"
@@ -253,7 +218,7 @@ def load_data():
 
     labels, drawings = [], []
 
-    for category in categories:
+    for category in labels_mapping.keys():
         data = np.load(f"{bitmap_directory}/{category}.npy", allow_pickle=True)
 
         random_state.shuffle(data)
@@ -261,9 +226,10 @@ def load_data():
 
         transformed_data = sampled_data.reshape(sampled_data.shape[0], 28, 28, 1)
 
+        # for pixel_data in sampled_data:
         for pixel_data in transformed_data:
-            data.append(np.invert(pixel_data).tobytes())
-            labels.append(category)
+            drawings.append(np.invert(pixel_data))
+            labels.append(labels_mapping[category])
 
         print(f"...{category} bitmaps complete")
 
@@ -273,8 +239,7 @@ def load_data():
 
 
 # train the generator and discriminator
-def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=100, n_batch=128):
-
+def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=20, n_batch=100):
     bat_per_epo = int(dataset[0].shape[0] / n_batch)
     half_batch = int(n_batch / 2)
 
@@ -282,7 +247,6 @@ def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=100, n_batc
     for i in range(n_epochs):
         # enumerate batches over the training set
         for j in range(bat_per_epo):
-
             # get randomly selected 'real' samples
             [X_real, labels_real], y_real = generate_real_samples(dataset, half_batch)
 
@@ -309,7 +273,7 @@ def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=100, n_batc
             # summarize loss on this batch
 
             print(
-                f">{i+1}, {j+1}/{bat_per_epo}, d1={d_loss1:.3f}, d2={d_loss2:.3f} g={g_loss:.3f}"
+                f">{i + 1}, {j + 1}/{bat_per_epo}, d1={d_loss1:.3f}, d2={d_loss2:.3f} g={g_loss:.3f}"
             )
 
     # save the generator model
@@ -317,7 +281,6 @@ def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=100, n_batc
 
 
 def main():
-
     # size of the latent space
     latent_dim = 100
 

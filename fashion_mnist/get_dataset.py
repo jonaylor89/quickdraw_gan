@@ -22,18 +22,17 @@ def pull_data():
     make_directory(quickdraw_directory)
     make_directory(bitmap_directory)
 
-    bitmap_url = "https://storgae.googleapis.com/quickdraw_dataset/full/numpy_bitmap"
+    bitmap_url = "https://storage.googleapis.com/quickdraw_dataset/full/numpy_bitmap"
 
     total_categories = len(categories)
 
     for index, category in enumerate(categories):
         bitmap_filename = f"/{category}.npy"
 
+        print(f"Downloading {category} drawings (category {index+1}/{total_categories})")
         with open(bitmap_directory + bitmap_filename, "wb+") as bitmap_file:
             bitmap_response = requests.get(bitmap_url + bitmap_filename)
             bitmap_file.write(bitmap_response.content)
-
-        print(f"Downloaded {category} drawings (category {index+1}/{total_categories})")
 
 
 if __name__ == "__main__":
