@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "Fashion-MNIST"
+name = "QuickdrawGAN"
 version = "0.1.0"
 description = ""
 authors = ["John Naylor <jonaylor89@gmail.com>"]
