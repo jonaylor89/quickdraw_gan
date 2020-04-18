@@ -3,6 +3,7 @@ import numpy as np
 from numpy import expand_dims
 from numpy import zeros
 from numpy import ones
+from matplotlib import pyplot
 from numpy.random import randn
 from numpy.random import randint
 from sklearn.model_selection import train_test_split
@@ -115,6 +116,7 @@ def define_generator(latent_dim, n_classes=3):
 
 # define the combined generator and discriminator model, for updating the generator
 def define_gan(g_model, d_model):
+
     # make weights in the discriminator not trainable
     d_model.trainable = False
 
@@ -238,10 +240,61 @@ def load_data():
     return train_test_split(drawings, labels, test_size=0.2)
 
 
+# create a line plot of loss for the gan and save to file
+def plot_history(d_hist, g_hist, a_hist):
+
+	# plot loss
+	pyplot.subplot(2, 1, 1)
+	pyplot.plot(d_hist, label='dis')
+	pyplot.plot(g_hist, label='gen')
+	pyplot.legend()
+
+	# plot discriminator accuracy
+	pyplot.subplot(2, 1, 2)
+	pyplot.plot(a_hist, label='acc')
+	pyplot.legend()
+
+	# save plot to file
+	pyplot.savefig('results_convergence/plot_line_plot_loss.png')
+	pyplot.close()
+
+
+# generate samples and save as a plot and save the model
+def summarize_performance(step, g_model, latent_dim, n_samples=100):
+	# prepare fake examples
+	X, _ = generate_fake_samples(g_model, latent_dim, n_samples)
+
+	# scale from [-1,1] to [0,1]
+	X = (X[0] + 1) / 2.0
+
+	# plot images
+	for i in range(10 * 10):
+
+		# define subplot
+		pyplot.subplot(10, 10, 1 + i)
+
+		# turn off axis
+		pyplot.axis('off')
+
+		# plot raw pixel data
+		pyplot.imshow(X[i, :, :, 0], cmap='gray_r')
+
+	# save plot to file
+	pyplot.savefig('results_convergence/generated_plot_%03d.png' % (step+1))
+	pyplot.close()
+
+	# save the generator model
+	g_model.save('results_convergence/model_%03d.h5' % (step+1))
+    
+
 # train the generator and discriminator
-def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=5, n_batch=100):
+def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=1, n_batch=240):
     bat_per_epo = int(dataset[0].shape[0] / n_batch)
     half_batch = int(n_batch / 2)
+
+    d1_hist = []
+    d2_hist = []
+    g_hist = []
 
     # manually enumerate epochs
     for i in range(n_epochs):
@@ -276,11 +329,22 @@ def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=5, n_batch=
                 f">{i + 1}, {j + 1}/{bat_per_epo}, d1={d_loss1:.3f}, d2={d_loss2:.3f} g={g_loss:.3f}"
             )
 
+            # record history
+            d1_hist.append(d_loss1)
+            d2_hist.append(d_loss2)
+            g_hist.append(g_loss)
+
+        summarize_performance(i, g_model, latent_dim)
+
+    plot_history(d1_hist, d2_hist, g_hist)
+
     # save the generator model
     g_model.save("cgan_doodle_generator.h5")
 
 
 def main():
+    os.makedirs('results_convergence', exist_ok=True)
+
     # size of the latent space
     latent_dim = 100
 
