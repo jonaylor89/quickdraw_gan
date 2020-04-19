@@ -240,24 +240,6 @@ def load_data():
     return train_test_split(drawings, labels, test_size=0.2)
 
 
-# create and save a plot of generated images
-def save_plot(examples, n):
-
-    # plot images
-    for i in range(n * n):
-
-        # define subplot
-        pyplot.subplot(n, n, 1 + i)
-
-        # turn off axis
-        pyplot.axis("off")
-
-        # plot raw pixel data
-        pyplot.imshow(examples[i, :, :, 0], cmap="gray_r")
-
-    pyplot.show()
-
-
 # create a line plot of loss for the gan and save to file
 def plot_history(d_hist, g_hist, a_hist):
 
