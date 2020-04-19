@@ -298,8 +298,10 @@ def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=1, n_batch=
 
     # manually enumerate epochs
     for i in range(n_epochs):
+
         # enumerate batches over the training set
         for j in range(bat_per_epo):
+
             # get randomly selected 'real' samples
             [X_real, labels_real], y_real = generate_real_samples(dataset, half_batch)
 
