@@ -240,6 +240,24 @@ def load_data():
     return train_test_split(drawings, labels, test_size=0.2)
 
 
+# create and save a plot of generated images
+def save_plot(examples, n):
+
+    # plot images
+    for i in range(n * n):
+
+        # define subplot
+        pyplot.subplot(n, n, 1 + i)
+
+        # turn off axis
+        pyplot.axis("off")
+
+        # plot raw pixel data
+        pyplot.imshow(examples[i, :, :, 0], cmap="gray_r")
+
+    pyplot.show()
+
+
 # create a line plot of loss for the gan and save to file
 def plot_history(d_hist, g_hist, a_hist):
 
@@ -288,7 +306,7 @@ def summarize_performance(step, g_model, latent_dim, n_samples=100):
     
 
 # train the generator and discriminator
-def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=1, n_batch=240):
+def train(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=1, n_batch=100):
     bat_per_epo = int(dataset[0].shape[0] / n_batch)
     half_batch = int(n_batch / 2)
 

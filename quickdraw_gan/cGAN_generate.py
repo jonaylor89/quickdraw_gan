@@ -50,8 +50,6 @@ def main():
     # specify labels
     labels = asarray([x for _ in range(3) for x in range(3)])
 
-    print("LABELS", labels)
-
     # generate images
     X = model.predict([latent_points, labels])
 
