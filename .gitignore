@@ -7,7 +7,6 @@ dist/
 
 # Dataset
 quickdraw_gan/quickdraw/
-results_convergence/
 
 # Editors
 .vscode/
